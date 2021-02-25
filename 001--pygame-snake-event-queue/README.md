@@ -3,3 +3,4 @@ in [PyGame](https://www.pygame.org).
 
 The first version is very simple/imperative,
 while the second version uses OOP features and an Event Queue to implement game logic.
+The third version adds multiplayer (two snakes).

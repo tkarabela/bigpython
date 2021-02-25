@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Event-driven Snake game
+Event-driven Snake game (two player version)
 
 Copyright (c) 2021 Tomas Karabela
 
@@ -38,6 +38,7 @@ class Message:
 
 @dataclass
 class SnakeChangeDirectionMessage(Message):
+    player: int
     direction: Tuple[int, int]
 
 @dataclass
@@ -108,13 +109,17 @@ class Snake(Entity):
     body: List[Tuple[int, int]]  # [head, ..., tail]
     direction: Tuple[int, int]  # (1, 0) or such
     max_length: int
+    player: int
+    color: Tuple[int, int, int]  # RGB
 
     def render(self, surface: pygame.Surface):
+        r, g, b = self.color
+
         for i, position in enumerate(self.body):
             if i == 0:
-                surface.set_at(position, (0, 200, 0))  # make head slightly darker
+                surface.set_at(position, (int(0.8*r), int(0.8*g), int(0.8*b)))  # make head slightly darker
             else:
-                surface.set_at(position, (0, 255, 0))
+                surface.set_at(position, (r, g, b))
 
     def update(self, messages: List[Message]) -> List[Message]:
         new_messages = []
@@ -123,13 +128,15 @@ class Snake(Entity):
         for message in messages:
             if isinstance(message, SnakeChangeDirectionMessage):
                 # make sure we don't allow changing to opposite direction, which would self-collide our hero
-                if any(x+y != 0 for x, y in zip(message.direction, self.direction)):
+                if message.player == self.player and any(x+y != 0 for x, y in zip(message.direction, self.direction)):
                     self.direction = message.direction
             elif isinstance(message, EntityCollisionMessage) and message.entity is self:
                 if message.other is self:
-                    new_messages.append(GameOverMessage("Snake bit its tail"))
+                    new_messages.append(RemoveEntityMessage(self))
+                    # new_messages.append(GameOverMessage("Snake bit its tail"))
                 elif isinstance(message.other, Wall):
-                    new_messages.append(GameOverMessage("Snake hit wall"))
+                    new_messages.append(RemoveEntityMessage(self))
+                    # new_messages.append(GameOverMessage("Snake hit wall"))
                 elif isinstance(message.other, Food):
                     self.max_length += 1
                     new_messages.append(RemoveEntityMessage(message.other))
@@ -183,13 +190,21 @@ class World:
                 return
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    self.message_queue.append(SnakeChangeDirectionMessage((0, -1)))
+                    self.message_queue.append(SnakeChangeDirectionMessage(player=1, direction=(0, -1)))
                 elif event.key == pygame.K_DOWN:
-                    self.message_queue.append(SnakeChangeDirectionMessage((0, 1)))
+                    self.message_queue.append(SnakeChangeDirectionMessage(player=1, direction=(0, 1)))
                 elif event.key == pygame.K_RIGHT:
-                    self.message_queue.append(SnakeChangeDirectionMessage((1, 0)))
+                    self.message_queue.append(SnakeChangeDirectionMessage(player=1, direction=(1, 0)))
                 elif event.key == pygame.K_LEFT:
-                    self.message_queue.append(SnakeChangeDirectionMessage((-1, 0)))
+                    self.message_queue.append(SnakeChangeDirectionMessage(player=1, direction=(-1, 0)))
+                elif event.key == pygame.K_w:
+                    self.message_queue.append(SnakeChangeDirectionMessage(player=2, direction=(0, -1)))
+                elif event.key == pygame.K_s:
+                    self.message_queue.append(SnakeChangeDirectionMessage(player=2, direction=(0, 1)))
+                elif event.key == pygame.K_d:
+                    self.message_queue.append(SnakeChangeDirectionMessage(player=2, direction=(1, 0)))
+                elif event.key == pygame.K_a:
+                    self.message_queue.append(SnakeChangeDirectionMessage(player=2, direction=(-1, 0)))
                 elif event.key == pygame.K_p:
                     self.paused = not self.paused  # toggle pause
 
@@ -206,10 +221,16 @@ class World:
 
         # update entities
         new_messages: List[Message] = []
+        living_snakes = False
 
         for entity in self.entities:
             tmp = entity.update(self.message_queue)
+            if isinstance(entity, Snake):
+                living_snakes = True
             new_messages.extend(tmp)
+
+        if not living_snakes:
+            new_messages.append(GameOverMessage("all players are out of the game"))
 
         # handle global messages, clear queue
         self.message_queue.extend(new_messages)
@@ -255,10 +276,12 @@ def main():
 
     # prepare world
     world = World(surface)
-    snake = Snake(body=[(10, 10), (9, 10), (8, 10)], direction=(1, 0), max_length=3)
+    snake1 = Snake(body=[(10, 10), (9, 10), (8, 10)], direction=(1, 0), max_length=3, player=1, color=(0, 255, 0))
+    snake2 = Snake(body=[(10, 30), (9, 30), (8, 30)], direction=(1, 0), max_length=3, player=2, color=(112, 214, 255))
     wall = Wall([(x, 0) for x in range(WIDTH)] + [(x, HEIGHT-1) for x in range(WIDTH)] +
                 [(0, x) for x in range(HEIGHT)] + [(WIDTH-1, x) for x in range(HEIGHT)])
-    world.entities.append(snake)
+    world.entities.append(snake1)
+    world.entities.append(snake2)
     world.entities.append(wall)
     world.message_queue.append(SpawnFoodMessage())
     world.update()
@@ -274,7 +297,8 @@ def main():
 
         # render in high resolution
         display.blit(pygame.transform.scale(surface, display.get_rect().size), (0, 0))
-        display.blit(font.render(f"Snake Length: {snake.max_length}", True, (0, 0, 0)), (10, 10))
+        display.blit(font.render(f"PLAYER 1 SCORE: {snake1.max_length}", True, (0, 0, 0)), (15, 15))
+        display.blit(font.render(f"PLAYER 2 SCORE: {snake2.max_length}", True, (0, 0, 0)), (WIDTH*SCALE - 215, 15))
         if world.paused:
             text = font.render(f"PAUSE (press P to continue)", True, (0, 0, 0))
             display.blit(text, ((SCALE * WIDTH - text.get_width()) / 2, (SCALE * HEIGHT - text.get_height()) / 2))
@@ -282,7 +306,7 @@ def main():
 
         # wait till next frame
         default_speed = 10  # fps
-        speed_factor = min(3.0, 1.0 + 0.1*snake.max_length)
+        speed_factor = min(3.0, 1.0 + 0.1*max(snake.max_length for snake in [snake1, snake2]))
         clock.tick(int(default_speed * speed_factor))
 
     # end screen
