@@ -1,0 +1,149 @@
+/*
+    jupyter-grade3-bigpython
+
+    # set Jupyter theme: https://github.com/dunovank/jupyter-themes
+    !jt -t grade3
+*/
+
+pre, code {
+  font-family: "JetBrains Mono" !important;
+}
+
+body {
+  font-family: "Red Hat Text" !important;
+}
+
+div.text_cell_render h1, div.text_cell_render h2, div.text_cell_render h3 {
+  font-family: "Red Hat Display" !important;
+  margin: 1em 0 !important;
+  letter-spacing: .01em;
+  font-weight: 400;
+}
+
+div.text_cell_render h1 {
+  font-weight: 400;
+}
+
+div.text_cell_render h3 {
+  font-weight: 700;
+}
+
+div.text_cell_render p {
+  line-height: 1.4;
+  margin: 1em 0 1.5em !important;
+  text-align: justify;
+  /*max-width: 41.5em;*/
+}
+
+div.prompt.input_prompt {
+    padding-bottom: 3px;
+}
+
+hr {
+  border: 0;
+  color: #ccc !important;
+  background: #ccc !important;
+  height: 2pt;
+  margin-top: 3em;
+  margin-bottom: 3em;
+}
+
+br.vtab {
+  margin-bottom: 30em;
+}
+
+.nav .dropdown-toggle {
+  color: #ccc !important;
+}
+
+#notification_trusted {
+  display: none;
+  opacity: 0.0;
+}
+
+#notification_area {
+  height: 50px;
+}
+
+a.anchor-link {
+  display:none;
+}
+
+div.text_cell_render h1 code {
+  color: inherit;
+}
+
+div.text_cell_render *::selection { background: hsla(23.18, 100%, 80%); }
+
+div.text_cell_render ul, div.text_cell_render ol {
+  list-style: none; /* Remove default bullets */
+}
+
+div.text_cell_render ul li, div.text_cell_render ol li {
+  padding-left: 0;
+  margin-bottom: 0.2em;
+}
+
+div.text_cell_render ul li::before {
+  content: "▢";  /* Add content: \2022 is the CSS Code/unicode for a bullet */
+  color: #126dce !important; /* Change the color */
+  font-weight: 900; /* If you want it to be bold */
+  vertical-align: 7%;
+  display: inline-block; /* Needed to add space between the bullet and the text */
+  width: 2em; /* Also needed for space (tweak if needed) */
+  margin-left: -2em;
+}
+
+div.text_cell_render ul li li {
+  font-size: 90%;
+}
+
+div.text_cell_render ul li li::before {
+  content: "—";
+  margin-left: -1em;
+  width: 2em; /* Also needed for space (tweak if needed) */
+}
+
+div.text_cell_render ol li::before {
+  vertical-align: 0%;
+  display: inline-block; /* Needed to add space between the bullet and the text */
+  width: 2em; /* Also needed for space (tweak if needed) */
+  margin-left: -2em;
+}
+
+div.text_cell_render ol li {
+  margin-bottom: 1em;
+}
+
+div.text_cell_render ol li:nth-of-type(1)::before {
+  content: "1️⃣";
+}
+
+div.text_cell_render ol li:nth-of-type(2)::before {
+  content: "2️⃣";
+}
+
+div.text_cell_render ol li:nth-of-type(3)::before {
+  content: "3️⃣";
+}
+
+
+div.text_cell_render code, div.text_cell_render pre, pre * {
+  font-variant-ligatures: no-contextual;
+}
+
+div.text_cell_render pre {
+  border-left: 0 !important;
+}
+
+right, .right {
+  text-align: right !important;
+}
+
+div.text_cell_render strong code {
+  font-weight: 900 !important;
+}
+
+.blue {
+  color: #126dce;
+}
